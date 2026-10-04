@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Чэнду — карта поездки 4–5 ноября 2026</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+html,body,#map{height:100%;margin:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.leaflet-control-layers{font-size:13px}
+.num{width:28px;height:28px;border-radius:50%;background:white;border:2px solid #222;text-align:center;line-height:24px;font-weight:700;box-shadow:0 1px 5px rgba(0,0,0,.35)}
+.hotel{width:34px;height:34px;border-radius:7px;background:white;border:3px solid #111;text-align:center;line-height:28px;font-weight:800;box-shadow:0 1px 5px rgba(0,0,0,.45)}
+.transit{width:30px;height:30px;border-radius:6px;background:white;border:2px solid #555;text-align:center;line-height:26px;font-weight:800;box-shadow:0 1px 5px rgba(0,0,0,.35)}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const pts = [
+ {n:0,name:'Отель — ChengDu TianFu Yard Hotel',lat:30.66255,lon:104.06375,time:'4–5 ноября',note:'No. 7, Section 1, Renmin Middle Road. Координата приблизительная по адресу и привязке к Tianfu Square.'},
+ {n:1,name:'Chengdu Museum',lat:30.65967,lon:104.06113,time:'~60–75 мин',note:'4 ноября. Сначала после заселения: ср 09:00–17:00, последний вход 16:30.'},
+ {n:2,name:'Tianfu Square',lat:30.65979,lon:104.06329,time:'15–25 мин',note:'4 ноября. Площадь рядом с отелем и музеем.'},
+ {n:3,name:"Wuhou Shrine",lat:30.64839,lon:104.04546,time:'60–75 мин',note:'4 ноября. Мемориальный комплекс эпохи Троецарствия; 09:00–18:00, последний вход 17:00.'},
+ {n:4,name:"People's Park",lat:30.65941,lon:104.05547,time:'45–60 мин',note:'4 ноября. Парк + чай. После Wuhou Shrine.'},
+ {n:5,name:'Kuanzhai Alley',lat:30.66619,lon:104.05127,time:'45–60 мин',note:'4 ноября. Исторические аллеи; особенно удобно ближе к вечеру.'},
+ {n:6,name:'Chunxi Road',lat:30.65870,lon:104.07860,time:'45–60 мин',note:'4 ноября. Центральная пешеходная зона; вечер.'},
+ {n:7,name:'Anshun Bridge',lat:30.64417,lon:104.08339,time:'20–30 мин',note:'4 ноября. Лучше после наступления темноты.'},
+ {n:8,name:'Chengdu SKP',lat:30.569005,lon:104.070442,time:'30–45 мин',note:'4 ноября. Вечерняя точка; рядом Jiaozi Park.'},
+ {n:9,name:'Jiaozi Park',lat:30.58506,lon:104.07068,time:'30–45 мин',note:'4 ноября. Современный деловой район и вечерняя подсветка.'},
+ {n:10,name:'Chengdu Panda Base',lat:30.73861,lon:104.14194,time:'08:00–10:30',note:'5 ноября. В ноябре вход с 08:00. Билет ¥55; бронирование до 14 дней заранее. Паспорт/оригинал ID обязателен.'},
+ {n:11,name:'Chengdu East Railway Station',lat:30.63130,lon:104.13892,time:'поезд 13:55',note:'5 ноября. G3538 → Chongqing West, 13:55–15:11. Лучше быть на вокзале примерно к 12:30–12:45.'}
+];
+
+const map = L.map('map').setView([30.66,104.07],12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution:'&copy; OpenStreetMap contributors',
+  maxZoom:19
+}).addTo(map);
+
+const groups = {
+  'Все точки': L.layerGroup().addTo(map),
+  '4 ноября — основной маршрут': L.layerGroup(),
+  '4 ноября — вечерний юг': L.layerGroup(),
+  '5 ноября — панды → вокзал': L.layerGroup()
+};
+
+const byN = {};
+pts.forEach(p=>{
+  byN[p.n]=p;
+  const cls = p.n===0 ? 'hotel' : 'num';
+  const icon = L.divIcon({
+    className:'',
+    html:`<div class="${cls}">${p.n===0?'H':p.n}</div>`,
+    iconSize:p.n===0?[34,34]:[28,28],
+    iconAnchor:p.n===0?[17,17]:[14,14]
+  });
+  L.marker([p.lat,p.lon],{icon})
+   .bindPopup(`<b>${p.n===0?'Отель':p.n+'. '+p.name}</b><br>${p.time}<br>${p.note}`)
+   .addTo(groups['Все точки']);
+});
+
+function coords(seq){return seq.map(n=>[byN[n].lat,byN[n].lon]);}
+
+// 4 ноября — сначала объекты с ранним закрытием, затем прогулка и вечерний центр.
+const day1 = [0,1,2,3,4,5,6,7];
+L.polyline(coords(day1),{weight:5,opacity:.85})
+ .bindPopup('4 ноября: отель → музей → Tianfu Square → Wuhou Shrine → People’s Park → Kuanzhai → Chunxi Road → Anshun Bridge')
+ .addTo(groups['4 ноября — основной маршрут']);
+
+// Вечерний юг — лучше Didi/метро; вынесен отдельным слоем, чтобы не перегружать основной маршрут.
+const south = [7,9,8,0];
+L.polyline(coords(south),{weight:5,opacity:.75,dashArray:'9 7'})
+ .bindPopup('4 ноября, поздний вечер: Anshun Bridge → Jiaozi Park → SKP → отель')
+ .addTo(groups['4 ноября — вечерний юг']);
+
+// 5 ноября — без возврата в центр: взять багаж с собой, сдать в visitor center Panda Base, затем ехать на Chengdu East.
+const day2 = [0,10,11];
+L.polyline(coords(day2),{weight:6,opacity:.85,dashArray:'12 7'})
+ .bindPopup('5 ноября: отель → Panda Base к 08:00 → Chengdu East на G3538 13:55')
+ .addTo(groups['5 ноября — панды → вокзал']);
+
+L.control.layers(null,groups,{collapsed:true,position:'topright'}).addTo(map);
+
+
+
+// Центрируем по городским точкам; Panda Base и вокзал всё равно видны при уменьшении масштаба.
+const bounds = L.latLngBounds(pts.map(p=>[p.lat,p.lon]));
+map.fitBounds(bounds.pad(0.06));
+</script>
+</body>
+</html>
