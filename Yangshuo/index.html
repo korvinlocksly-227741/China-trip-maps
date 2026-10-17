@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Яншо — карта поездки 12–15 ноября 2026</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--text:#1f2937;--muted:#6b7280;--shadow:0 6px 24px rgba(0,0,0,.18);--panel:rgba(255,255,255,.97)}
+html,body,#map{height:100%;margin:0}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+.home-btn,.menu-btn{position:absolute;z-index:1200;top:max(10px,env(safe-area-inset-top));background:#fff;color:#111;border:0;border-radius:10px;padding:10px 12px;font-weight:750;font-size:14px;box-shadow:var(--shadow);text-decoration:none}
+.home-btn{left:10px}.menu-btn{right:10px;cursor:pointer}
+.panel{position:absolute;z-index:1150;top:58px;right:10px;width:min(410px,calc(100vw - 20px));max-height:calc(100vh - 76px);background:var(--panel);border-radius:12px;box-shadow:var(--shadow);overflow:auto;display:none}
+.panel.open{display:block}.head{padding:13px 14px 10px;border-bottom:1px solid #e5e7eb;background:#fff;position:sticky;top:0;z-index:2}.head b{font-size:17px}.head small{display:block;color:var(--muted);margin-top:3px}
+.info,.alert{margin:10px 12px;padding:10px 11px;border-radius:9px;font-size:12px;line-height:1.45}.info{background:#f8fafc;border:1px solid #dbeafe}.alert{background:#fff7ed;border:1px solid #fed7aa}
+.day{margin:8px 10px;border:1px solid #e5e7eb;border-radius:10px;padding:10px 11px;background:#fff;cursor:pointer}.day.active{outline:2px solid #111}.day b{font-size:14px}.day div{font-size:12px;color:var(--muted);line-height:1.45;margin-top:4px}
+.note{padding:9px 13px 13px;font-size:11px;color:var(--muted);line-height:1.45}
+.point{min-width:30px;height:30px;padding:0 5px;border-radius:8px;background:#fff;border:2px solid #111;display:flex;align-items:center;justify-content:center;font-weight:850;font-size:11px;box-shadow:0 2px 7px rgba(0,0,0,.32)}
+.point.train{border-width:3px}.point.opt{border-style:dashed}.leaflet-popup-content{font-size:13px;line-height:1.45}
+@media(max-width:560px){.home-btn,.menu-btn{font-size:13px;padding:9px 10px}.panel{top:55px;max-height:calc(100vh - 66px)}}
+</style></head>
+<body>
+<a class="home-btn" href="../">← Общая карта</a><button class="menu-btn" id="menuBtn">☰ 12–15 ноября</button>
+<div class="panel open" id="panel">
+<div class="head"><b>Яншо · 12–15 ноября</b><small>3 ночи · река, горы, велосипеды</small></div>
+<div class="info"><b>Отель:</b> бронь с видом на реку есть в таблице. Точный маркер не ставлю без названия из Trip.com. Для городской базы использую West Street как ориентир.</div>
+<div class="day active" data-day="12"><b>12 ноября · приезд и отдых</b><div>D3967 до Guilin North 14:13 → D8269 15:46–16:10 до Yangshuo Station → трансфер около часа → заселение → спокойная прогулка по West Street.</div></div>
+<div class="day" data-day="13"><b>13 ноября · плоты + Ruyi Peak + шоу</b><div>Утром Yulong River / Jinlong Bridge Wharf → днём Ruyi Peak cableway → возвращение в город → вечером Impression Liu Sanjie.</div></div>
+<div class="day" data-day="14"><b>14 ноября · Ten-Mile Gallery на велосипедах</b><div>West Street → Ten-Mile Gallery → рисовые поля/кофейни → ресторан из рабочего плана. Xianggong Mountain показан отдельной пунктирной опцией: туда нужен автомобиль, это не продолжение велосипедного маршрута.</div></div>
+<div class="day" data-day="15"><b>15 ноября · поезд в Шэньчжэнь</b><div>G3741 Yangshuo → Shenzhen North 10:20–13:23. Станция далеко от города: целиться в прибытие на вокзал примерно к 09:20, выезжать из Яншо ориентировочно около 08:15–08:30.</div></div>
+<div class="note">В таблице кофейни Banshan / «tiangingse» и ресторан с оленями у Yingman Hotel пока записаны без однозначных координат — не ставлю их на карту наугад. X — район Xianggong Mountain.</div>
+</div>
+<div id="map"></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const pts={
+ station:{code:'R',name:'Yangshuo Railway Station / 阳朔站',lat:24.96361,lon:110.56336,cls:'train',note:'12.11 прибытие D8269 в 16:10. 15.11 G3741 в 10:20 → Shenzhen North.'},
+ town:{code:'Y',name:'Yangshuo West Street / 阳朔西街',lat:24.773869,lon:110.493986,note:'Городской ориентир для вечерних прогулок и базовая точка маршрутов.'},
+ raft:{code:'1',name:'Jinlong Bridge Wharf / 金龙桥码头',lat:24.816835,lon:110.394130,note:'Удобная стартовая точка для бамбуковых плотов по Yulong River.'},
+ ruyi:{code:'2',name:'Ruyi Peak Cableway Scenic Area / 如意峰',lat:24.679444,lon:110.471080,note:'Канатная дорога и панорамный маршрут. В таблице заложен билет ~2200 ₽.'},
+ show:{code:'3',name:'Impression Liu Sanjie / 印象刘三姐',lat:24.76992,lon:110.50387,note:'Вечернее шоу на воде; в таблице билеты от ~3000 ₽.'},
+ gallery:{code:'4',name:'Ten-Mile Gallery / 十里画廊',lat:24.749369,lon:110.476517,note:'Основной район велопрогулки 14 ноября.'},
+ gate:{code:'G',name:'Ten-Mile Gallery Gate',lat:24.75673,lon:110.48637,note:'Северный вход/ориентир для начала велосипедного маршрута.'},
+ xiang:{code:'X',name:'Xianggong Mountain / 相公山 — район входа',lat:24.923237,lon:110.479419,cls:'opt',note:'Опционально отдельной поездкой на машине. Не совмещать как продолжение веломаршрута.'}
+};
+const map=L.map('map',{zoomControl:false}).setView([24.80,110.48],11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);L.control.zoom({position:'bottomright'}).addTo(map);
+Object.values(pts).forEach(p=>{const icon=L.divIcon({className:'',html:`<div class="point ${p.cls||''}">${p.code}</div>`,iconSize:[36,30],iconAnchor:[18,15]});L.marker([p.lat,p.lon],{icon}).addTo(map).bindPopup(`<b>${p.name}</b><br>${p.note}`)});
+function ll(keys){return keys.map(k=>[pts[k].lat,pts[k].lon])}
+const routes={
+ '12':[L.polyline(ll(['station','town']),{weight:4,opacity:.65,dashArray:'10 7'})],
+ '13':[L.polyline(ll(['town','raft','ruyi','show','town']),{weight:5,opacity:.82})],
+ '14':[L.polyline(ll(['town','gate','gallery','town']),{weight:5,opacity:.85}),L.polyline(ll(['town','xiang','town']),{weight:4,opacity:.6,dashArray:'8 7'})],
+ '15':[L.polyline(ll(['town','station']),{weight:4,opacity:.7,dashArray:'9 7'})]
+};
+function showDay(day){Object.values(routes).flat().forEach(r=>{if(map.hasLayer(r))map.removeLayer(r)});routes[day].forEach(r=>r.addTo(map));document.querySelectorAll('.day').forEach(el=>el.classList.toggle('active',el.dataset.day===day));const keys=day==='12'?['station','town']:day==='13'?['town','raft','ruyi','show']:day==='14'?['town','gate','gallery','xiang']:['town','station'];map.fitBounds(L.latLngBounds(ll(keys)).pad(.14));if(innerWidth<600)panel.classList.remove('open')}
+document.querySelectorAll('.day').forEach(el=>el.addEventListener('click',()=>showDay(el.dataset.day)));const panel=document.getElementById('panel');document.getElementById('menuBtn').addEventListener('click',()=>panel.classList.toggle('open'));showDay('12');
+</script></body></html>
