@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Фэнхуан — карта поездки 11–12 ноября 2026</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--text:#1f2937;--muted:#6b7280;--shadow:0 6px 24px rgba(0,0,0,.18);--panel:rgba(255,255,255,.97)}
+html,body,#map{height:100%;margin:0}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+.home-btn,.menu-btn{position:absolute;z-index:1200;top:max(10px,env(safe-area-inset-top));background:#fff;color:#111;border:0;border-radius:10px;padding:10px 12px;font-weight:750;font-size:14px;box-shadow:var(--shadow);text-decoration:none}
+.home-btn{left:10px}.menu-btn{right:10px;cursor:pointer}
+.panel{position:absolute;z-index:1150;top:58px;right:10px;width:min(410px,calc(100vw - 20px));max-height:calc(100vh - 76px);background:var(--panel);border-radius:12px;box-shadow:var(--shadow);overflow:auto;display:none}
+.panel.open{display:block}.head{padding:13px 14px 10px;border-bottom:1px solid #e5e7eb;background:#fff;position:sticky;top:0;z-index:2}.head b{font-size:17px}.head small{display:block;color:var(--muted);margin-top:3px}
+.info,.alert{margin:10px 12px;padding:10px 11px;border-radius:9px;font-size:12px;line-height:1.45}.info{background:#f8fafc;border:1px solid #dbeafe}.alert{background:#fff7ed;border:1px solid #fed7aa}
+.day{margin:8px 10px;border:1px solid #e5e7eb;border-radius:10px;padding:10px 11px;background:#fff;cursor:pointer}.day.active{outline:2px solid #111}.day b{font-size:14px}.day div{font-size:12px;color:var(--muted);line-height:1.45;margin-top:4px}
+.note{padding:9px 13px 13px;font-size:11px;color:var(--muted);line-height:1.45}
+.point{min-width:30px;height:30px;padding:0 5px;border-radius:8px;background:#fff;border:2px solid #111;display:flex;align-items:center;justify-content:center;font-weight:850;font-size:11px;box-shadow:0 2px 7px rgba(0,0,0,.32)}
+.point.train{border-width:3px}.point.opt{border-style:dashed}.leaflet-popup-content{font-size:13px;line-height:1.45}
+@media(max-width:560px){.home-btn,.menu-btn{font-size:13px;padding:9px 10px}.panel{top:55px;max-height:calc(100vh - 66px)}}
+</style></head>
+<body>
+<a class="home-btn" href="../">← Общая карта</a><button class="menu-btn" id="menuBtn">☰ 11–12 ноября</button>
+<div class="panel open" id="panel">
+<div class="head"><b>Фэнхуан · 11–12 ноября</b><small>одна ночь · старый город и вечерняя подсветка</small></div>
+<div class="info"><b>Отель:</b> бронь с видом на реку есть в таблице, но точное название/координата из короткой ссылки Trip.com не извлекаются — поэтому не ставлю фиктивный маркер.</div>
+<div class="day active" data-day="11"><b>11 ноября · основной маршрут</b><div>G5665: Furongzhen 11:56 → Fenghuanggucheng 12:36 → трансфер в старый город → Tuojiang stepping stones → Hong Bridge → Wanming Pagoda → прогулка вдоль реки и старых улиц → дождаться вечерней подсветки.</div></div>
+<div class="day" data-day="12"><b>12 ноября · ранний выезд</b><div>D3967 отправляется в 08:09. Утреннюю прогулку не закладываем: выезд из старого города ориентировочно около 07:00–07:15, чтобы без спешки добраться до Fenghuang Gucheng Station.</div></div>
+<div class="note">R — ж/д станция. Линия от станции до старого города схематична: фактически это трансфер/такси. Tuojiang stepping stones и North Gate находятся рядом, поэтому отдельный маркер North Gate не нужен.</div>
+</div>
+<div id="map"></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const pts={
+ station:{code:'R',name:'Fenghuang Gucheng Railway Station',lat:28.02051,lon:109.59919,cls:'train',note:'11.11 прибытие 12:36. 12.11 D3967 в 08:09 → Guilin North.'},
+ old:{code:'A',name:'Fenghuang Ancient Town',lat:27.95089,lon:109.60268,note:'Центр старого города и основная прогулочная зона.'},
+ stones:{code:'1',name:'Tuojiang Stepping Stones / 沱江跳岩',lat:27.949679,lon:109.602482,note:'Одна из главных фототочек на реке, рядом с North Gate.'},
+ hong:{code:'2',name:'Hong Bridge / 虹桥',lat:27.948416,lon:109.606296,note:'Крытый мост и удобная точка вечерней прогулки.'},
+ wanming:{code:'3',name:'Wanming Pagoda / 万名塔',lat:27.95131,lon:109.60369,note:'Пагода на берегу Туцзяна, особенно красива вечером.'}
+};
+const map=L.map('map',{zoomControl:false}).setView([27.956,109.602],13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);
+L.control.zoom({position:'bottomright'}).addTo(map);
+Object.values(pts).forEach(p=>{const icon=L.divIcon({className:'',html:`<div class="point ${p.cls||''}">${p.code}</div>`,iconSize:[36,30],iconAnchor:[18,15]});L.marker([p.lat,p.lon],{icon}).addTo(map).bindPopup(`<b>${p.name}</b><br>${p.note}`)});
+function ll(keys){return keys.map(k=>[pts[k].lat,pts[k].lon])}
+const routes={
+ '11':[L.polyline(ll(['station','old']),{weight:4,opacity:.6,dashArray:'10 7'}),L.polyline(ll(['old','stones','hong','wanming','old']),{weight:5,opacity:.85})],
+ '12':[L.polyline(ll(['old','station']),{weight:4,opacity:.7,dashArray:'9 7'})]
+};
+function showDay(day){Object.values(routes).flat().forEach(r=>{if(map.hasLayer(r))map.removeLayer(r)});routes[day].forEach(r=>r.addTo(map));document.querySelectorAll('.day').forEach(el=>el.classList.toggle('active',el.dataset.day===day));const keys=day==='11'?['station','old','stones','hong','wanming']:['old','station'];map.fitBounds(L.latLngBounds(ll(keys)).pad(.14));if(innerWidth<600)panel.classList.remove('open')}
+document.querySelectorAll('.day').forEach(el=>el.addEventListener('click',()=>showDay(el.dataset.day)));const panel=document.getElementById('panel');document.getElementById('menuBtn').addEventListener('click',()=>panel.classList.toggle('open'));showDay('11');
+</script></body></html>
