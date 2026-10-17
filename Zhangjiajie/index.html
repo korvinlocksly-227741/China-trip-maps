@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Чжанцзяцзе — карта поездки 7–10 ноября 2026</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--text:#1f2937;--muted:#6b7280;--shadow:0 6px 24px rgba(0,0,0,.18);--panel:rgba(255,255,255,.97);--border:#e5e7eb}
+html,body,#map{height:100%;margin:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+#map{background:#eef2f3}
+.home-btn,.menu-btn{position:absolute;z-index:1200;top:max(10px,env(safe-area-inset-top));border:0;border-radius:10px;background:#fff;color:#111;text-decoration:none;padding:10px 12px;font-weight:750;font-size:14px;box-shadow:var(--shadow)}
+.home-btn{left:10px}.menu-btn{right:10px;cursor:pointer}
+.panel{position:absolute;z-index:1150;top:58px;right:10px;width:min(390px,calc(100vw - 20px));max-height:calc(100vh - 76px);background:var(--panel);border-radius:12px;box-shadow:var(--shadow);overflow:auto;display:none}
+.panel.open{display:block}
+.panel-head{position:sticky;top:0;background:#fff;padding:13px 14px 10px;border-bottom:1px solid var(--border);z-index:2}
+.panel-head b{font-size:17px}.panel-head small{display:block;color:var(--muted);margin-top:3px}
+.alert{margin:10px 12px;padding:10px 11px;border-radius:9px;background:#fff7ed;border:1px solid #fed7aa;font-size:12px;line-height:1.45}
+.day{margin:8px 10px;border:1px solid #e5e7eb;border-radius:10px;padding:10px 11px;cursor:pointer;background:#fff}
+.day.active{outline:2px solid #111}.day-title{font-weight:800;font-size:14px}.day-sub{font-size:12px;color:var(--muted);line-height:1.45;margin-top:4px}
+.note{padding:9px 13px 13px;font-size:11px;line-height:1.45;color:var(--muted)}
+.point{min-width:30px;height:30px;padding:0 5px;border-radius:8px;background:#fff;border:2px solid #111;display:flex;align-items:center;justify-content:center;font-weight:850;font-size:11px;box-shadow:0 2px 7px rgba(0,0,0,.32)}
+.point.hotel{border-width:3px}.point.warn{border-style:dashed}.leaflet-popup-content{font-size:13px;line-height:1.45}.leaflet-control-zoom{margin-bottom:18px!important}
+@media(max-width:560px){.home-btn,.menu-btn{font-size:13px;padding:9px 10px}.panel{top:55px;max-height:calc(100vh - 66px)}}
+</style>
+</head>
+<body>
+<a class="home-btn" href="../">← Общая карта</a>
+<button class="menu-btn" id="menuBtn">☰ 7–10 ноября</button>
+<div class="panel open" id="panel">
+  <div class="panel-head"><b>Чжанцзяцзе · 7–10 ноября</b><small>JI Hotel у East Gate · 3 ночи</small></div>
+  <div class="alert"><b>Важно для 7 ноября:</b> с 13.10.2026 основная Tianmen Mountain Cableway закрыта на реконструкцию. Пока работает только <b>Route C</b>: Mountain Gate → Tianmen Cave Express Cableway → Tianmen Cave → 7-секционный эскалатор → вершина → обратно тем же путём. Перед поездкой перепроверить статус.</div>
+  <div class="day active" data-day="7"><div class="day-title">7 ноября · Тяньмэнь после поезда</div><div class="day-sub">11:58 Zhangjiajie West → Didi к городской нижней станции → шаттл к Mountain Gate → Route C → после осмотра Didi в JI Hotel у East Gate. В таблице заложено 4–6 ч и вход примерно 13:00–14:00.</div></div>
+  <div class="day" data-day="8"><div class="day-title">8 ноября · основной день «Аватара»</div><div class="day-sub">East Gate → автобус внутри парка → Tianzi Mountain Cableway → Tianzi viewpoints → Yuanjiajie → Hallelujah Mountain → First Bridge → Bailong Elevator вниз → автобус к East Gate.</div></div>
+  <div class="day" data-day="9"><div class="day-title">9 ноября · Grand Canyon + Glass Bridge</div><div class="day-sub">Утром Didi из отеля → полный маршрут B со стеклянным мостом и ущельем → обратно в Wulingyuan. Если вернётесь до ~14:30–15:00 — короткая Ten-Mile Gallery как опция.</div></div>
+  <div class="day" data-day="10"><div class="day-title">10 ноября · Golden Whip + поезд в Фужун</div><div class="day-sub">Короткий участок Golden Whip Stream со стороны Shui Rao Si Men, без полного прохода долины → отель за багажом → Zhangjiajie West. Поезд G6079 15:10–15:33; цель — быть на вокзале около 14:15.</div></div>
+  <div class="note">Линии на карте показывают порядок перемещений схематично, а не точную дорогу или тропу. Маркер H — отель, R — ж/д вокзал, E — East Gate. Камера хранения у городской станции Тяньмэня есть в рабочем плане поездки, но её наличие лучше подтвердить на месте.</div>
+</div>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const pts={
+ hotel:{code:'H',name:'JI Hotel — Wulingyuan Biaozhimen',lat:29.3517,lon:110.5322,cls:'hotel',note:'База 7–10 ноября. Building 3, Nine Courtyards Ten Streets, рядом с East Gate. Координата ориентировочная по адресу комплекса — для такси используйте название отеля в Amap/Trip.com.'},
+ west:{code:'R',name:'Zhangjiajie West Railway Station',lat:29.17086,lon:110.45699,note:'7.11 прибытие G2445 в 11:58. 10.11 отправление G6079 в 15:10 → Furongzhen.'},
+ tmdown:{code:'T',name:'Tianmen Mountain Cableway — городская нижняя станция',lat:29.11478,lon:110.47848,cls:'warn',note:'Основная канатка закрыта с 13.10.2026. Отсюда продолжает ходить шаттл к Mountain Gate. По плану здесь оставить багаж — подтвердить камеру хранения на месте.'},
+ tmgate:{code:'C',name:'Tianmen Mountain — Mountain Gate / Route C',lat:29.06703,lon:110.47317,note:'Точка входа для действующей Route C; далее Tianmen Cave Express Cableway.'},
+ tmcave:{code:'洞',name:'Tianmen Cave / Небесные врата',lat:29.05136,lon:110.48274,note:'После Express Cableway. Далее 7-секционный эскалатор на вершину.'},
+ tmtop:{code:'TOP',name:'Тяньмэнь — вершина / обзорный контур',lat:29.05057,lon:110.47576,note:'Прогулка по верхнему плато; отдельные тропы могут закрываться из-за погоды или техработ.'},
+ east:{code:'E',name:'Wulingyuan East Gate / 标志门',lat:29.351196,lon:110.535819,note:'Главный вход рядом с отелем.'},
+ tianzi:{code:'TZ',name:'Tianzi Mountain / Helong Park',lat:29.38393,lon:110.48975,note:'После подъёма Tianzi Mountain Cableway: основные смотровые Tianzi Mountain.'},
+ yuan:{code:'Y',name:'Yuanjiajie — Enchanting Terrace',lat:29.34620,lon:110.43902,note:'Смотровая Yuanjiajie перед Avatar Hallelujah Mountain.'},
+ avatar:{code:'A',name:'Avatar Hallelujah Mountain',lat:29.34519,lon:110.43722,note:'Главная «аватарная» колонна в Yuanjiajie.'},
+ bridge:{code:'B',name:'First Bridge under Heaven viewpoint',lat:29.34732,lon:110.43346,note:'Смотровая природного моста 天下第一桥.'},
+ bailong:{code:'L',name:'Bailong Elevator',lat:29.35118,lon:110.46117,note:'Спуск с плато Yuanjiajie в долину; затем внутренний автобус.'},
+ water:{code:'W',name:'Shui Rao Si Men / Water Winding Four Gates',lat:29.34577,lon:110.46707,note:'Удобная точка для короткого захода в Golden Whip Stream 10 ноября.'},
+ tenmile:{code:'10M',name:'Ten-Mile Gallery',lat:29.36192,lon:110.48867,note:'Опция 9 ноября только если вернётесь из Grand Canyon достаточно рано.'},
+ canyon:{code:'G',name:'Zhangjiajie Grand Canyon',lat:29.41230,lon:110.69420,note:'9 ноября: полный маршрут B через ущелье.'},
+ glass:{code:'GB',name:'Zhangjiajie Glass Bridge',lat:29.39905,lon:110.69799,note:'Стеклянный мост — часть плана Grand Canyon Route B.'}
+};
+const map=L.map('map',{zoomControl:false}).setView([29.31,110.52],10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);
+L.control.zoom({position:'bottomright'}).addTo(map);
+const markers={};
+Object.entries(pts).forEach(([k,p])=>{const icon=L.divIcon({className:'',html:`<div class="point ${p.cls||''}">${p.code}</div>`,iconSize:[36,30],iconAnchor:[18,15]});markers[k]=L.marker([p.lat,p.lon],{icon}).addTo(map).bindPopup(`<b>${p.name}</b><br>${p.note}`)});
+function ll(keys){return keys.map(k=>[pts[k].lat,pts[k].lon])}
+const routes={
+ '7':[L.polyline(ll(['west','tmdown','tmgate','tmcave','tmtop']),{weight:5,opacity:.85}),L.polyline(ll(['tmtop','tmcave','tmgate','tmdown','hotel']),{weight:4,opacity:.65,dashArray:'10 7'})],
+ '8':[L.polyline(ll(['hotel','east','tianzi','yuan','avatar','bridge','bailong','east','hotel']),{weight:5,opacity:.85})],
+ '9':[L.polyline(ll(['hotel','canyon','glass','canyon','hotel']),{weight:5,opacity:.85}),L.polyline(ll(['hotel','tenmile','hotel']),{weight:4,opacity:.65,dashArray:'8 7'})],
+ '10':[L.polyline(ll(['hotel','east','water','east','hotel','west']),{weight:5,opacity:.85})]
+};
+function clearRoutes(){Object.values(routes).flat().forEach(r=>{if(map.hasLayer(r))map.removeLayer(r)})}
+function showDay(day){clearRoutes();routes[day].forEach(r=>r.addTo(map));document.querySelectorAll('.day').forEach(el=>el.classList.toggle('active',el.dataset.day===day));const keys=day==='7'?['west','tmdown','tmgate','tmcave','tmtop','hotel']:day==='8'?['hotel','east','tianzi','yuan','avatar','bridge','bailong']:day==='9'?['hotel','canyon','glass','tenmile']:['hotel','east','water','west'];map.fitBounds(L.latLngBounds(ll(keys)).pad(.16));if(window.innerWidth<600)document.getElementById('panel').classList.remove('open')}
+document.querySelectorAll('.day').forEach(el=>el.addEventListener('click',()=>showDay(el.dataset.day)));
+const panel=document.getElementById('panel');document.getElementById('menuBtn').addEventListener('click',()=>panel.classList.toggle('open'));
+showDay('7');
+</script>
+</body>
+</html>
