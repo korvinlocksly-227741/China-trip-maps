@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Фужун / Furong — карта поездки 10–11 ноября 2026</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--text:#1f2937;--muted:#6b7280;--shadow:0 6px 24px rgba(0,0,0,.18);--panel:rgba(255,255,255,.97)}
+html,body,#map{height:100%;margin:0}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+.home-btn,.menu-btn{position:absolute;z-index:1200;top:max(10px,env(safe-area-inset-top));background:#fff;color:#111;border:0;border-radius:10px;padding:10px 12px;font-weight:750;font-size:14px;box-shadow:var(--shadow);text-decoration:none}
+.home-btn{left:10px}.menu-btn{right:10px;cursor:pointer}
+.panel{position:absolute;z-index:1150;top:58px;right:10px;width:min(390px,calc(100vw - 20px));max-height:calc(100vh - 76px);background:var(--panel);border-radius:12px;box-shadow:var(--shadow);overflow:auto;display:none}
+.panel.open{display:block}.head{padding:13px 14px 10px;border-bottom:1px solid #e5e7eb;background:#fff;position:sticky;top:0;z-index:2}.head b{font-size:17px}.head small{display:block;color:var(--muted);margin-top:3px}
+.info{margin:10px 12px;padding:10px 11px;border-radius:9px;background:#f8fafc;border:1px solid #dbeafe;font-size:12px;line-height:1.45}
+.day{margin:8px 10px;border:1px solid #e5e7eb;border-radius:10px;padding:10px 11px;background:#fff;cursor:pointer}.day.active{outline:2px solid #111}.day b{font-size:14px}.day div{font-size:12px;color:var(--muted);line-height:1.45;margin-top:4px}
+.note{padding:9px 13px 13px;font-size:11px;color:var(--muted);line-height:1.45}
+.point{min-width:30px;height:30px;padding:0 5px;border-radius:8px;background:#fff;border:2px solid #111;display:flex;align-items:center;justify-content:center;font-weight:850;font-size:11px;box-shadow:0 2px 7px rgba(0,0,0,.32)}
+.point.train{border-width:3px}.point.opt{border-style:dashed}.leaflet-popup-content{font-size:13px;line-height:1.45}
+@media(max-width:560px){.home-btn,.menu-btn{font-size:13px;padding:9px 10px}.panel{top:55px;max-height:calc(100vh - 66px)}}
+</style>
+</head>
+<body>
+<a class="home-btn" href="../">← Общая карта</a>
+<button class="menu-btn" id="menuBtn">☰ 10–11 ноября</button>
+<div class="panel open" id="panel">
+  <div class="head"><b>Фужун / Furong · 10–11 ноября</b><small>одна ночь · старый город + водопад</small></div>
+  <div class="info"><b>Отель:</b> бронь Trip.com ID 80820989. В рабочей таблице указано: бесплатная встреча на Furongzhen Station, трансфер около 15 минут. Точную точку отеля пока не ставлю, чтобы не вводить в заблуждение.</div>
+  <div class="day active" data-day="10"><b>10 ноября · вечер после приезда</b><div>G6079: Zhangjiajie West 15:10 → Furongzhen 15:33 → трансфер в отель → вход в Furong Ancient Town → старые улицы → Xizhou Bronze Pillar → водопад → нижняя смотровая → дождаться вечерней подсветки → кафе/ужин.</div></div>
+  <div class="day" data-day="11"><b>11 ноября · короткое утро + поезд</b><div>Завтрак и короткая прогулка → выезд к Furongzhen Station ориентировочно около 10:45–11:00 → G5665 в 11:56 → Fenghuanggucheng 12:36.</div></div>
+  <div class="note">По актуальным туристическим данным scenic area обычно работает примерно 07:30–23:00; режим и билет лучше перепроверить ближе к поездке. Линии схематичны. R — ж/д станция, S — вход/кассы.</div>
+</div>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const pts={
+ station:{code:'R',name:'Furongzhen Railway Station / 芙蓉镇站',lat:28.77302,lon:109.98202,cls:'train',note:'10.11 прибытие G6079 в 15:33. 11.11 отправление G5665 в 11:56 → Fenghuanggucheng.'},
+ entrance:{code:'S',name:'Furong Town Ticket Office / вход',lat:28.74559,lon:109.94318,note:'Удобная стартовая точка прогулки по scenic area.'},
+ bronze:{code:'1',name:'Xizhou Bronze Pillar / музей',lat:28.74538,lon:109.93877,note:'Историческая точка рядом с водопадом.'},
+ waterfall:{code:'2',name:'Furong Town Waterfall / 芙蓉镇瀑布',lat:28.74499,lon:109.93983,note:'Главная достопримечательность. Лучше увидеть и засветло, и после включения подсветки.'},
+ view:{code:'3',name:'Viewpoint of Waterfalls',lat:28.74323,lon:109.94006,note:'Нижняя смотровая с общим видом на водопад и дома над ним.'},
+ geopark:{code:'G',name:'Xiangxi Global Geopark Museum',lat:28.75092,lon:109.95255,cls:'opt',note:'Опционально утром 11 ноября, только если останется время.'}
+};
+const map=L.map('map',{zoomControl:false}).setView([28.748,109.947],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);
+L.control.zoom({position:'bottomright'}).addTo(map);
+Object.values(pts).forEach(p=>{const icon=L.divIcon({className:'',html:`<div class="point ${p.cls||''}">${p.code}</div>`,iconSize:[36,30],iconAnchor:[18,15]});L.marker([p.lat,p.lon],{icon}).addTo(map).bindPopup(`<b>${p.name}</b><br>${p.note}`)});
+function ll(keys){return keys.map(k=>[pts[k].lat,pts[k].lon])}
+const routes={
+ '10':[L.polyline(ll(['station','entrance']),{weight:4,opacity:.65,dashArray:'10 7'}),L.polyline(ll(['entrance','bronze','waterfall','view','entrance']),{weight:5,opacity:.85})],
+ '11':[L.polyline(ll(['entrance','geopark','station']),{weight:4,opacity:.7,dashArray:'9 7'})]
+};
+function showDay(day){Object.values(routes).flat().forEach(r=>{if(map.hasLayer(r))map.removeLayer(r)});routes[day].forEach(r=>r.addTo(map));document.querySelectorAll('.day').forEach(el=>el.classList.toggle('active',el.dataset.day===day));const keys=day==='10'?['station','entrance','bronze','waterfall','view']:['entrance','geopark','station'];map.fitBounds(L.latLngBounds(ll(keys)).pad(.14));if(innerWidth<600)panel.classList.remove('open')}
+document.querySelectorAll('.day').forEach(el=>el.addEventListener('click',()=>showDay(el.dataset.day)));
+const panel=document.getElementById('panel');document.getElementById('menuBtn').addEventListener('click',()=>panel.classList.toggle('open'));showDay('10');
+</script>
+</body>
+</html>
