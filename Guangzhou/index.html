@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Гуанчжоу — карта поездки 18–21 ноября 2026</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--text:#1f2937;--muted:#6b7280;--shadow:0 6px 24px rgba(0,0,0,.18);--panel:rgba(255,255,255,.97)}
+html,body,#map{height:100%;margin:0}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+.home-btn,.menu-btn{position:absolute;z-index:1200;top:max(10px,env(safe-area-inset-top));background:#fff;color:#111;border:0;border-radius:10px;padding:10px 12px;font-weight:750;font-size:14px;box-shadow:var(--shadow);text-decoration:none}
+.home-btn{left:10px}.menu-btn{right:10px;cursor:pointer}
+.panel{position:absolute;z-index:1150;top:58px;right:10px;width:min(410px,calc(100vw - 20px));max-height:calc(100vh - 76px);background:var(--panel);border-radius:12px;box-shadow:var(--shadow);overflow:auto;display:none}
+.panel.open{display:block}.head{padding:13px 14px 10px;border-bottom:1px solid #e5e7eb;background:#fff;position:sticky;top:0;z-index:2}.head b{font-size:17px}.head small{display:block;color:var(--muted);margin-top:3px}
+.info,.alert{margin:10px 12px;padding:10px 11px;border-radius:9px;font-size:12px;line-height:1.45}.info{background:#f8fafc;border:1px solid #dbeafe}.alert{background:#fff7ed;border:1px solid #fed7aa}
+.day{margin:8px 10px;border:1px solid #e5e7eb;border-radius:10px;padding:10px 11px;background:#fff;cursor:pointer}.day.active{outline:2px solid #111}.day b{font-size:14px}.day div{font-size:12px;color:var(--muted);line-height:1.45;margin-top:4px}
+.note{padding:9px 13px 13px;font-size:11px;color:var(--muted);line-height:1.45}
+.point{min-width:30px;height:30px;padding:0 5px;border-radius:8px;background:#fff;border:2px solid #111;display:flex;align-items:center;justify-content:center;font-weight:850;font-size:11px;box-shadow:0 2px 7px rgba(0,0,0,.32)}
+.point.train{border-width:3px}.point.opt{border-style:dashed}.leaflet-popup-content{font-size:13px;line-height:1.45}
+@media(max-width:560px){.home-btn,.menu-btn{font-size:13px;padding:9px 10px}.panel{top:55px;max-height:calc(100vh - 66px)}}
+</style></head>
+<body>
+<a class="home-btn" href="../">← Общая карта</a><button class="menu-btn" id="menuBtn">☰ 18–21 ноября</button>
+<div class="panel open" id="panel">
+<div class="head"><b>Гуанчжоу · 18–21 ноября</b><small>сафари, Шамянь, океанариум, покупки</small></div>
+<div class="alert"><b>Конфликт в рабочей таблице:</b> Shamian Island и Chimelong Safari Park оба стоят на 19 ноября, но на сафари уже заложен целый день. Поэтому на карте Шамянь перенесён в опцию на вечер 18-го или утро 20-го.</div>
+<div class="day active" data-day="18"><b>18 ноября · приезд</b><div>G6327 Shenzhen Pingshan 15:25 → Guangzhou South 16:27 → метро/такси в отель. Если останутся силы и отель расположен удобно — Shamian Island вечером; иначе перенести на утро 20-го.</div></div>
+<div class="day" data-day="19"><b>19 ноября · Chimelong Safari Park</b><div>Отдельный полный день. Не добавляем сюда Шамянь или центр: парк сам по себе занимает большую часть дня.</div></div>
+<div class="day" data-day="20"><b>20 ноября · Shamian + Grandview + покупки</b><div>Если Шамянь не посмотрели 18-го: утром Shamian Island → затем Tianhe / Grandview Mall → Grandview Polar Ocean World → покупки и подарки.</div></div>
+<div class="day" data-day="21"><b>21 ноября · аэропорт</b><div>В рабочей таблице заложен выход из отеля около 10:00. Guangzhou Baiyun Airport находится далеко к северу от центра — оставляем большой запас на метро и регистрацию.</div></div>
+<div class="note">Точный отель пока не отмечен: короткая ссылка Trip.com не даёт названия/координаты. G — Guangzhou South, A — Baiyun Airport.</div>
+</div>
+<div id="map"></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const pts={
+ station:{code:'G',name:'Guangzhou South Railway Station',lat:22.9918,lon:113.26446,cls:'train',note:'18.11 прибытие G6327 в 16:27.'},
+ shamian:{code:'1',name:'Shamian Island / 沙面岛',lat:23.10976,lon:113.23943,note:'Исторический остров. Лучше вынести из полного дня сафари.'},
+ safari:{code:'2',name:'Chimelong Safari Park / 长隆野生动物世界',lat:23.00546,lon:113.31022,note:'19 ноября: отдельный полный день.'},
+ grandview:{code:'3',name:'Grandview Polar Ocean World / 正佳极地海洋世界',lat:23.132143,lon:113.327025,note:'20 ноября. Находится в Grandview Mall — удобно совместить с покупками.'},
+ airport:{code:'A',name:'Guangzhou Baiyun International Airport',lat:23.3925,lon:113.29889,cls:'train',note:'21 ноября — вылет в Москву.'}
+};
+const map=L.map('map',{zoomControl:false}).setView([23.14,113.29],11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);L.control.zoom({position:'bottomright'}).addTo(map);
+Object.values(pts).forEach(p=>{const icon=L.divIcon({className:'',html:`<div class="point ${p.cls||''}">${p.code}</div>`,iconSize:[36,30],iconAnchor:[18,15]});L.marker([p.lat,p.lon],{icon}).addTo(map).bindPopup(`<b>${p.name}</b><br>${p.note}`)});
+function ll(keys){return keys.map(k=>[pts[k].lat,pts[k].lon])}
+const routes={
+ '18':[L.polyline(ll(['station','shamian']),{weight:4,opacity:.65,dashArray:'10 7'})],
+ '19':[L.polyline(ll(['shamian','safari']),{weight:4,opacity:.65,dashArray:'9 7'})],
+ '20':[L.polyline(ll(['shamian','grandview']),{weight:5,opacity:.85})],
+ '21':[L.polyline(ll(['grandview','airport']),{weight:4,opacity:.7,dashArray:'9 7'})]
+};
+function showDay(day){Object.values(routes).flat().forEach(r=>{if(map.hasLayer(r))map.removeLayer(r)});routes[day].forEach(r=>r.addTo(map));document.querySelectorAll('.day').forEach(el=>el.classList.toggle('active',el.dataset.day===day));const keys=day==='18'?['station','shamian']:day==='19'?['safari']:day==='20'?['shamian','grandview']:['grandview','airport'];map.fitBounds(L.latLngBounds(ll(keys)).pad(.18));if(innerWidth<600)panel.classList.remove('open')}
+document.querySelectorAll('.day').forEach(el=>el.addEventListener('click',()=>showDay(el.dataset.day)));const panel=document.getElementById('panel');document.getElementById('menuBtn').addEventListener('click',()=>panel.classList.toggle('open'));showDay('18');
+</script></body></html>
