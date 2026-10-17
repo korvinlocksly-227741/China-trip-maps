@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Шэньчжэнь — море и Дапэн, 15–18 ноября 2026</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--text:#1f2937;--muted:#6b7280;--shadow:0 6px 24px rgba(0,0,0,.18);--panel:rgba(255,255,255,.97)}
+html,body,#map{height:100%;margin:0}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+.home-btn,.menu-btn{position:absolute;z-index:1200;top:max(10px,env(safe-area-inset-top));background:#fff;color:#111;border:0;border-radius:10px;padding:10px 12px;font-weight:750;font-size:14px;box-shadow:var(--shadow);text-decoration:none}
+.home-btn{left:10px}.menu-btn{right:10px;cursor:pointer}
+.panel{position:absolute;z-index:1150;top:58px;right:10px;width:min(410px,calc(100vw - 20px));max-height:calc(100vh - 76px);background:var(--panel);border-radius:12px;box-shadow:var(--shadow);overflow:auto;display:none}
+.panel.open{display:block}.head{padding:13px 14px 10px;border-bottom:1px solid #e5e7eb;background:#fff;position:sticky;top:0;z-index:2}.head b{font-size:17px}.head small{display:block;color:var(--muted);margin-top:3px}
+.info,.alert{margin:10px 12px;padding:10px 11px;border-radius:9px;font-size:12px;line-height:1.45}.info{background:#f8fafc;border:1px solid #dbeafe}.alert{background:#fff7ed;border:1px solid #fed7aa}
+.day{margin:8px 10px;border:1px solid #e5e7eb;border-radius:10px;padding:10px 11px;background:#fff;cursor:pointer}.day.active{outline:2px solid #111}.day b{font-size:14px}.day div{font-size:12px;color:var(--muted);line-height:1.45;margin-top:4px}
+.note{padding:9px 13px 13px;font-size:11px;color:var(--muted);line-height:1.45}
+.point{min-width:30px;height:30px;padding:0 5px;border-radius:8px;background:#fff;border:2px solid #111;display:flex;align-items:center;justify-content:center;font-weight:850;font-size:11px;box-shadow:0 2px 7px rgba(0,0,0,.32)}
+.point.train{border-width:3px}.point.opt{border-style:dashed}.leaflet-popup-content{font-size:13px;line-height:1.45}
+@media(max-width:560px){.home-btn,.menu-btn{font-size:13px;padding:9px 10px}.panel{top:55px;max-height:calc(100vh - 66px)}}
+</style></head>
+<body>
+<a class="home-btn" href="../">← Общая карта</a><button class="menu-btn" id="menuBtn">☰ 15–18 ноября</button>
+<div class="panel open" id="panel">
+<div class="head"><b>Шэньчжэнь · Дапэн · 15–18 ноября</b><small>море, крепость, храм, пляжи</small></div>
+<div class="info"><b>Отель:</b> в таблице — первая линия + завтраки, но короткая ссылка Trip.com не раскрывает название. Поэтому карту привязываю к точкам Дапэна, а не к выдуманной координате отеля.</div>
+<div class="day active" data-day="15"><b>15 ноября · приезд + Jiaochangwei</b><div>G3741 → Shenzhen North 13:23 → D2298 14:12–14:29 до Shenzhen Pingshan → такси на полуостров → Jiaochangwei Beach → отдых у моря.</div></div>
+<div class="day" data-day="16"><b>16 ноября · Dapeng Fortress + Dongshan Temple</b><div>Jiaochangwei → Dapeng Fortress → Dongshan Temple → обратно к пляжу. Эти точки расположены рядом и логично проходятся одним пешим маршрутом.</div></div>
+<div class="day" data-day="17"><b>17 ноября · Judiaosha Beach</b><div>От района Jiaochangwei на такси/Didi к Judiaosha → день на пляже → обратно. Это уже отдельный выезд, пешком между пляжами идти не стоит.</div></div>
+<div class="day" data-day="18"><b>18 ноября · поезд в Гуанчжоу</b><div>G6327 Shenzhen Pingshan → Guangzhou South 15:25–16:27. Из Дапэна лучше выезжать ориентировочно около 13:00: на полуострове пробки могут сильно менять время в пути.</div></div>
+<div class="note">R — Shenzhen Pingshan. J — Jiaochangwei Beach. Точка отеля будет добавлена позже, если получим его название/координату.</div>
+</div>
+<div id="map"></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const pts={
+ station:{code:'R',name:'Shenzhen Pingshan Railway Station',lat:22.71033,lon:114.32218,cls:'train',note:'15.11 прибытие D2298 в 14:29. 18.11 G6327 в 15:25 → Guangzhou South.'},
+ jiao:{code:'J',name:'Jiaochangwei Beach / 较场尾海滩',lat:22.590056,lon:114.512880,note:'Пляж на 15 ноября и удобная базовая точка района Дапэн.'},
+ fortress:{code:'1',name:'Dapeng Fortress / 大鹏所城',lat:22.595213,lon:114.512449,note:'Историческая крепость, практически рядом с Jiaochangwei.'},
+ temple:{code:'2',name:'Dongshan Temple / 东山寺',lat:22.596405,lon:114.519660,note:'Храм рядом с Dapeng Fortress; удобно добавить в тот же день.'},
+ judiao:{code:'3',name:'Judiaosha Beach / 桔钓沙',lat:22.557058,lon:114.552381,note:'Отдельный пляжный день 17 ноября.'}
+};
+const map=L.map('map',{zoomControl:false}).setView([22.61,114.49],12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);L.control.zoom({position:'bottomright'}).addTo(map);
+Object.values(pts).forEach(p=>{const icon=L.divIcon({className:'',html:`<div class="point ${p.cls||''}">${p.code}</div>`,iconSize:[36,30],iconAnchor:[18,15]});L.marker([p.lat,p.lon],{icon}).addTo(map).bindPopup(`<b>${p.name}</b><br>${p.note}`)});
+function ll(keys){return keys.map(k=>[pts[k].lat,pts[k].lon])}
+const routes={
+ '15':[L.polyline(ll(['station','jiao']),{weight:4,opacity:.65,dashArray:'10 7'})],
+ '16':[L.polyline(ll(['jiao','fortress','temple','jiao']),{weight:5,opacity:.85})],
+ '17':[L.polyline(ll(['jiao','judiao','jiao']),{weight:4,opacity:.7,dashArray:'9 7'})],
+ '18':[L.polyline(ll(['jiao','station']),{weight:4,opacity:.7,dashArray:'9 7'})]
+};
+function showDay(day){Object.values(routes).flat().forEach(r=>{if(map.hasLayer(r))map.removeLayer(r)});routes[day].forEach(r=>r.addTo(map));document.querySelectorAll('.day').forEach(el=>el.classList.toggle('active',el.dataset.day===day));const keys=day==='15'?['station','jiao']:day==='16'?['jiao','fortress','temple']:day==='17'?['jiao','judiao']:['jiao','station'];map.fitBounds(L.latLngBounds(ll(keys)).pad(.14));if(innerWidth<600)panel.classList.remove('open')}
+document.querySelectorAll('.day').forEach(el=>el.addEventListener('click',()=>showDay(el.dataset.day)));const panel=document.getElementById('panel');document.getElementById('menuBtn').addEventListener('click',()=>panel.classList.toggle('open'));showDay('15');
+</script></body></html>
